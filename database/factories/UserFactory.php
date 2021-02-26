@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use Domain\Tenant\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -26,7 +27,7 @@ class UserFactory extends Factory
             'name' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
             'email_verified_at' => now(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+            'password' => bcrypt('secret'),
             'remember_token' => Str::random(10),
         ];
     }
@@ -41,6 +42,27 @@ class UserFactory extends Factory
         return $this->state(function (array $attributes) {
             return [
                 'email_verified_at' => null,
+            ];
+        });
+    }
+
+    public function withTenant()
+    {
+        return $this->state(function () {
+            return [
+                'tenant_id' => Tenant::factory()->create(),
+            ];
+        });
+    }
+
+    public function memberTenant()
+    {
+        return $this->state(function () {
+            $tenants = Tenant::all()->pluck('id')->toArray();
+
+            return [
+                'tenant_id' => $tenants[array_rand($tenants)],
+                // 'role' => 'member',
             ];
         });
     }
